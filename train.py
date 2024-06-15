@@ -153,6 +153,11 @@ def train1(i):
     return train(train_loader)
 
 os.makedirs('cifar10', exist_ok=True)
+loader0 = MnistLoader('cifar10', batch_size=1000, train=True)
+val_loader = MnistLoader('cifar10', batch_size=10000, train=False)
+val_loader.images = loader0.images[40000:50000]
+val_loader.labels = loader0.labels[40000:50000]
+
 outputs = torch.stack([train0() for _ in tqdm(range(1000))])
 
 out_dir = 'logsc0'
