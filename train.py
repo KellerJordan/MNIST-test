@@ -157,7 +157,6 @@ def logodds(pp, i):
 
 os.makedirs('/tmp/mnist', exist_ok=True)
 test_loader = MnistLoader('/tmp/mnist', batch_size=10000, train=False)
-
 loader0 = MnistLoader('/tmp/mnist', train=True)
 val_loader = MnistLoader('/tmp/mnist', batch_size=10000, train=False)
 val_loader.images = loader0.images[50000:60000]
@@ -165,7 +164,8 @@ val_loader.labels = loader0.labels[50000:60000]
 
 outputs0 = torch.stack([train0() for _ in tqdm(range(1000))])
 mu0 = outputs0.float().mean(0)
-os.makedirs('logs', exist_ok=True)
-p = 'logs/%s.pt' % uuid.uuid4()
-torch.save(mu0, p)
+
+out_dir = 'logs'
+os.makedirs(out_dir, exist_ok=True)
+torch.save(mu0, '%s/%s.pt' % (out_dir, uuid.uuid4()))
 
