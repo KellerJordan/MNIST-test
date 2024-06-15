@@ -165,6 +165,7 @@ val_loader.labels = loader0.labels[50000:60000]
 
 outputs0 = torch.stack([train0() for _ in tqdm(range(1000))])
 mu0 = outputs0.float().mean(0)
-p = '%s.pt' % uuid.uuid4()
+os.makedirs('logs', exist_ok=True)
+p = 'logs/%s.pt' % uuid.uuid4()
 torch.save(outputs0, mu0)
 
