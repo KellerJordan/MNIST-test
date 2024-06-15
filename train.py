@@ -158,7 +158,7 @@ def logodds(pp, i):
 os.makedirs('/tmp/mnist', exist_ok=True)
 test_loader = MnistLoader('/tmp/mnist', batch_size=10000, train=False)
 
-loader0 = MnistLoader('/tmp/mnist', batch_size=1000, train=True)
+loader0 = MnistLoader('/tmp/mnist', train=True)
 val_loader = MnistLoader('/tmp/mnist', batch_size=10000, train=False)
 val_loader.images = loader0.images[50000:60000]
 val_loader.labels = loader0.labels[50000:60000]
