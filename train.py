@@ -44,7 +44,6 @@ class MnistLoader:
     def __init__(self, path, train=True, batch_size=500, aug=None, drop_last=None, shuffle=None, gpu=0):
         data_path = os.path.join(path, 'train.pt' if train else 'test.pt')
         if not os.path.exists(data_path):
-#             dset = torchvision.datasets.CIFAR10(path, download=True, train=train)
             dset = torchvision.datasets.MNIST('/tmp', train=train, download=True)
             images = torch.tensor(dset.data)
             labels = torch.tensor(dset.targets)
@@ -105,14 +104,6 @@ class MLP(nn.Module):
         return x
 
 
-test_loader = MnistLoader('/tmp/mnist', batch_size=10000, train=False)
-
-loader0 = MnistLoader('/tmp/mnist', batch_size=1000, train=True)
-val_loader = MnistLoader('/tmp/mnist', batch_size=10000, train=False)
-val_loader.images = loader0.images[50000:60000]
-val_loader.labels = loader0.labels[50000:60000]
-
-
 def train(train_loader):
     dim = 2048
     model = MLP(dim).cuda().half()
@@ -164,9 +155,16 @@ def train1(i):
 def logodds(pp, i):
     return pp[i] - (pp.exp()[:i].sum() + pp.exp()[i+1:].sum()).log()
 
+os.makedirs('/tmp/mnist', exist_ok=True)
+test_loader = MnistLoader('/tmp/mnist', batch_size=10000, train=False)
+
+loader0 = MnistLoader('/tmp/mnist', batch_size=1000, train=True)
+val_loader = MnistLoader('/tmp/mnist', batch_size=10000, train=False)
+val_loader.images = loader0.images[50000:60000]
+val_loader.labels = loader0.labels[50000:60000]
+
 outputs0 = torch.stack([train0() for _ in tqdm(range(1000))])
 mu0 = outputs0.float().mean(0)
-import uuid
 p = '%s.pt' % uuid.uuid4()
 torch.save(outputs0, mu0)
 
