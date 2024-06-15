@@ -22,7 +22,7 @@ MNIST_STD = torch.tensor((0.3081,))
 def batch_crop(images, crop_size):
     r = (images.size(-1) - crop_size)//2
     shifts = torch.randint(-r, r+1, size=(len(images), 2), device=images.device)
-    images_out = torch.empty((len(images), 3, crop_size, crop_size), device=images.device, dtype=images.dtype)
+    images_out = torch.empty((len(images), 1, crop_size, crop_size), device=images.device, dtype=images.dtype)
     # The two cropping methods in this if-else produce equivalent results, but the second is faster for r > 2.
     if r <= 2:
         for sy in range(-r, r+1):
@@ -30,7 +30,7 @@ def batch_crop(images, crop_size):
                 mask = (shifts[:, 0] == sy) & (shifts[:, 1] == sx)
                 images_out[mask] = images[mask, :, r+sy:r+sy+crop_size, r+sx:r+sx+crop_size]
     else:
-        images_tmp = torch.empty((len(images), 3, crop_size, crop_size+2*r), device=images.device, dtype=images.dtype)
+        images_tmp = torch.empty((len(images), 1, crop_size, crop_size+2*r), device=images.device, dtype=images.dtype)
         for s in range(-r, r+1):
             mask = (shifts[:, 0] == s)
             images_tmp[mask] = images[mask, :, r+s:r+s+crop_size, :]
@@ -44,7 +44,7 @@ class MnistLoader:
     def __init__(self, path, train=True, batch_size=500, aug=None, drop_last=None, shuffle=None, gpu=0):
         data_path = os.path.join(path, 'train.pt' if train else 'test.pt')
         if not os.path.exists(data_path):
-            dset = torchvision.datasets.CIFAR10('/tmp', train=train, download=True)
+            dset = torchvision.datasets.MNIST('/tmp', train=train, download=True)
             images = torch.tensor(dset.data)
             labels = torch.tensor(dset.targets)
             torch.save({'images': images, 'labels': labels, 'classes': dset.classes}, data_path)
@@ -94,7 +94,7 @@ class MnistLoader:
 class MLP(nn.Module):
     def __init__(self, dim):
         super().__init__()
-        self.lin1 = nn.Linear(32*32*3, dim)
+        self.lin1 = nn.Linear(28*28, dim)
         self.lin2 = nn.Linear(dim, 10)
     def forward(self, x):
         x = x.view(len(x), -1)
@@ -139,24 +139,24 @@ def train(train_loader):
         outputs = model(inputs)
         return outputs
     
-N = 40000 # base train set size
+N = 20000 # base train set size
 def train0():
-    train_loader = MnistLoader('cifar10', batch_size=1000, train=True, aug=dict(translate=2))
+    train_loader = MnistLoader('/tmp/mnist', batch_size=1000, train=True, aug=dict(translate=2))
     train_loader.images = train_loader.images[:N]
     train_loader.labels = train_loader.labels[:N]
     return train(train_loader)
 
 def train1(i):
-    train_loader = MnistLoader('cifar10', batch_size=1000, train=True, aug=dict(translate=2))
+    train_loader = MnistLoader('/tmp/mnist', batch_size=1000, train=True, aug=dict(translate=2))
     train_loader.images = torch.cat([train_loader.images[:N], train_loader.images[i:i+1]])
     train_loader.labels = torch.cat([train_loader.labels[:N], train_loader.labels[i:i+1]])
     return train(train_loader)
 
-os.makedirs('cifar10', exist_ok=True)
+os.makedirs('/tmp/mnist', exist_ok=True)
 outputs = torch.stack([train0() for _ in tqdm(range(1000))])
 
-out_dir = 'logsc0'
+out_dir = 'logs'
 os.makedirs(out_dir, exist_ok=True)
 mu = outputs.float().mean(0)
-torch.save(mu, '%s/%s.pt' % (out_dir, uuid.uuid4()))
+torch.save(mu0, '%s/%s.pt' % (out_dir, uuid.uuid4()))
 
