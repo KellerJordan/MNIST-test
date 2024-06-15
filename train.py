@@ -167,5 +167,5 @@ outputs0 = torch.stack([train0() for _ in tqdm(range(1000))])
 mu0 = outputs0.float().mean(0)
 os.makedirs('logs', exist_ok=True)
 p = 'logs/%s.pt' % uuid.uuid4()
-torch.save(outputs0, mu0)
+torch.save(mu0, p)
 
