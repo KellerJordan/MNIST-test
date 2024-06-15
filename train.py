@@ -52,7 +52,7 @@ class MnistLoader:
         data = torch.load(data_path, map_location=torch.device(gpu))
         self.images, self.labels, self.classes = data['images'], data['labels'], data['classes']
         # It's faster to load+process uint8 data than to load preprocessed fp16 data
-        self.images = (self.images.half() / 255).permute(0, 3, 1, 2).to(memory_format=torch.channels_last)
+        self.images = (self.images.half() / 255).permute(0, 3, 1, 2)
 
         self.normalize = T.Normalize(MNIST_MEAN, MNIST_STD)
         self.proc_images = {} # Saved results of image processing to be done on the first epoch
@@ -109,8 +109,8 @@ def train(train_loader):
     model = MLP(dim).cuda().half()
     optimizer = torch.optim.SGD(model.parameters(), lr=0, momentum=0.9)
 
-    base_lr = 0.4
-    epochs = 5
+    base_lr = 0.04
+    epochs = 10
     total_steps = epochs * len(train_loader)
     def get_lr(step):
         if step < 100: # warmup
